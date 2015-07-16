@@ -2062,7 +2062,7 @@
       <Make Name="Loftek" Model="CXS 2200" />
       <Make Name="Loftek" Model="CXS 3200" />
       <Make Name="PROCCTV" Model="CamView J Series" />
-      <Make Name="PROCCTV" Model="Pet\'zView" />
+      <Make Name="PROCCTV" Model="Pet/zView" />
       <Make Name="Smarthome" Model="IP Cam 75790" />
       <Make Name="Solwise" Model="SEC-C1062" />
       <Make Name="Storage Options" Model="SON-IPC1" />
@@ -5649,6 +5649,129 @@ copy or delete as many lines as you need.-->
       <Command Name="Pos 3">ScriptControl-1?&lt;s:Envelope xmlns:s=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;xmlns:ns1=&quot;urn:schemas-pelco-com:service:ScriptControl:1&quot;&gt;&lt;s:Body&gt;&lt;ns1:ExecuteScript&gt;&lt;scriptName&gt;PRESET3&lt;/scriptName&gt;&lt;/ns1:ExecuteScript&gt;&lt;/s:Body&gt;&lt;/s:Envelope&gt;</Command>
       <Command Name="Pos 4">ScriptControl-1?&lt;s:Envelope xmlns:s=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;xmlns:ns1=&quot;urn:schemas-pelco-com:service:ScriptControl:1&quot;&gt;&lt;s:Body&gt;&lt;ns1:ExecuteScript&gt;&lt;scriptName&gt;PRESET4&lt;/scriptName&gt;&lt;/ns1:ExecuteScript&gt;&lt;/s:Body&gt;&lt;/s:Envelope&gt;</Command>
       <Command Name="Pos 5">ScriptControl-1?&lt;s:Envelope xmlns:s=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;xmlns:ns1=&quot;urn:schemas-pelco-com:service:ScriptControl:1&quot;&gt;&lt;s:Body&gt;&lt;ns1:ExecuteScript&gt;&lt;scriptName&gt;PRESET5&lt;/scriptName&gt;&lt;/ns1:ExecuteScript&gt;&lt;/s:Body&gt;&lt;/s:Envelope&gt;</Command>
+    </ExtendedCommands>
+  </Camera>
+  <Camera id="209">
+    <Makes>
+      <Make Name="LevelOne" Model="FCS-4200" />
+    </Makes>
+    <CommandURL>/cgi-bin/operator/</CommandURL>
+    <Commands>
+      <Center>ptzset?move=center</Center>
+      <Left>ptzset?move=left</Left>
+      <LeftUp>ptzset?move=upleft</LeftUp>
+      <LeftDown>ptzset?move=downleft</LeftDown>
+      <RightUp>ptzset?move=upright</RightUp>
+      <RightDown>ptzset?move=downright</RightDown>
+      <Right>ptzset?move=right</Right>
+      <Up>ptzset?move=up</Up>
+      <Down>ptzset?move=down</Down>
+      <ZoomIn>ptzset?zoom=1</ZoomIn>
+      <ZoomOut>ptzset?zoom=0</ZoomOut>
+    </Commands>
+    <ExtendedCommands>
+      <Command Name="Go Preset 1">ptzset?gotoserverpresetname=Preset1</Command>
+      <Command Name="Go Preset 2">ptzset?gotoserverpresetname=Preset2</Command>
+      <Command Name="Go Preset 3">ptzset?gotoserverpresetname=Preset3</Command>
+      <Command Name="Go Preset 4">ptzset?gotoserverpresetname=Preset4</Command>
+      <Command Name="Go Preset 5">ptzset?gotoserverpresetname=Preset5</Command>
+      <Command Name="Go Preset 6">ptzset?gotoserverpresetname=Preset6</Command>
+      <Command Name="Focus In">ptzset?focus=1</Command>
+      <Command Name="Focus Out">ptzset?focus=0</Command>
+    </ExtendedCommands>
+  </Camera>
+  <Camera id="210">
+    <Makes>
+      <Make Name="R-Tech" Model="720p" />
+    </Makes>
+    <CommandURL>/decoder_control.cgi</CommandURL>
+    <Cookies>browser=1;noshow=0</Cookies>
+    <Commands>
+      <Center>command=11</Center>
+      <Left>command=4</Left>
+      <LeftUp>command=90</LeftUp>
+      <Right>command=6</Right>
+      <RightUp>command=91</RightUp>
+      <Up>command=0</Up>
+      <Down>command=2</Down>
+      <LeftDown>command=92</LeftDown>
+      <RightDown>command=93</RightDown>
+      <Stop>command=1</Stop>
+    </Commands>
+    <ExtendedCommands>
+      <Command Name="Stop">command=1</Command>
+      <Command Name="IR on">command=95</Command>
+      <Command Name="IR off">command=94</Command>
+      <Command Name="H Patrol">command=28</Command>
+      <Command Name="V Patrol">command=26</Command>
+      <Command Name="Flip">/camera_control.cgi?param=5&amp;value=1</Command>
+      <Command Name="Mirror">/camera_control.cgi?param=5&amp;value=2</Command>
+      <Command Name="Flip And Mirror">/camera_control.cgi?param=5&amp;value=3</Command>
+      <Command Name="No Transforms">/camera_control.cgi?param=5&amp;value=0</Command>
+      <Command Name="Mode 50Hz">/camera_control.cgi?param=3&amp;value=0</Command>
+      <Command Name="Mode 60Hz">/camera_control.cgi?param=3&amp;value=1</Command>
+      <Command Name="Mode Outdoor">/camera_control.cgi?param=3&amp;value=2</Command>
+      <Command Name="Set Resolution 320x240">/camera_control.cgi?param=0&amp;value=8</Command>
+      <Command Name="Set Resolution 640x480">/camera_control.cgi?param=0&amp;value=32</Command>
+      <Command Name="IO Output High">command=94</Command>
+      <Command Name="IO Output Low">command=95</Command>
+      <Command Name="Set Preset 0">command=30</Command>
+      <Command Name="Go Preset 0">command=31</Command>
+      <Command Name="Set Preset 1">command=32</Command>
+      <Command Name="Go Preset 1">command=33</Command>
+      <Command Name="Set Preset 2">command=34</Command>
+      <Command Name="Go Preset 2">command=35</Command>
+      <Command Name="Set Preset 3">command=36</Command>
+      <Command Name="Go Preset 3">command=37</Command>
+      <Command Name="Set Preset 4">command=38</Command>
+      <Command Name="Go Preset 4">command=39</Command>
+      <Command Name="Set Preset 5">command=40</Command>
+      <Command Name="Go Preset 5">command=41</Command>
+      <Command Name="Set Preset 6">command=42</Command>
+      <Command Name="Go Preset 6">command=43</Command>
+      <Command Name="Set Preset 7">command=44</Command>
+      <Command Name="Go Preset 7">command=45</Command>
+      <Command Name="Set Preset 8">command=46</Command>
+      <Command Name="Go Preset 8">command=47</Command>
+      <Command Name="Set Preset 9">command=48</Command>
+      <Command Name="Go Preset 9">command=49</Command>
+      <Command Name="Set Preset 10">command=50</Command>
+      <Command Name="Go Preset 10">command=51</Command>
+      <Command Name="Set Preset 11">command=52</Command>
+      <Command Name="Go Preset 11">command=53</Command>
+      <Command Name="Set Preset 12">command=54</Command>
+      <Command Name="Go Preset 12">command=55</Command>
+      <Command Name="Set Preset 13">command=56</Command>
+      <Command Name="Go Preset 13">command=57</Command>
+      <Command Name="Set Preset 14">command=58</Command>
+      <Command Name="Go Preset 14">command=59</Command>
+      <Command Name="Set Preset 15">command=60</Command>
+      <Command Name="Go Preset 15">command=61</Command>
+      <Command Name="Set Preset 16">command=62</Command>
+      <Command Name="Go Preset 16">command=63</Command>
+      <Command Name="Brightness 0">/camera_control.cgi?param=1&amp;value=0</Command>
+      <Command Name="Brightness 1">/camera_control.cgi?param=1&amp;value=16</Command>
+      <Command Name="Brightness 2">/camera_control.cgi?param=1&amp;value=32</Command>
+      <Command Name="Brightness 3">/camera_control.cgi?param=1&amp;value=48</Command>
+      <Command Name="Brightness 4">/camera_control.cgi?param=1&amp;value=64</Command>
+      <Command Name="Brightness 5">/camera_control.cgi?param=1&amp;value=80</Command>
+      <Command Name="Brightness 6">/camera_control.cgi?param=1&amp;value=96</Command>
+      <Command Name="Brightness 7">/camera_control.cgi?param=1&amp;value=112</Command>
+      <Command Name="Brightness 8">/camera_control.cgi?param=1&amp;value=128</Command>
+      <Command Name="Brightness 9">/camera_control.cgi?param=1&amp;value=144</Command>
+      <Command Name="Brightness 10">/camera_control.cgi?param=1&amp;value=160</Command>
+      <Command Name="Brightness 11">/camera_control.cgi?param=1&amp;value=176</Command>
+      <Command Name="Brightness 12">/camera_control.cgi?param=1&amp;value=192</Command>
+      <Command Name="Brightness 13">/camera_control.cgi?param=1&amp;value=208</Command>
+      <Command Name="Brightness 14">/camera_control.cgi?param=1&amp;value=224</Command>
+      <Command Name="Brightness 15">/camera_control.cgi?param=1&amp;value=240</Command>
+      <Command Name="Contrast 0">/camera_control.cgi?param=2&amp;value=0</Command>
+      <Command Name="Contrast 1">/camera_control.cgi?param=2&amp;value=1</Command>
+      <Command Name="Contrast 2">/camera_control.cgi?param=2&amp;value=2</Command>
+      <Command Name="Contrast 3">/camera_control.cgi?param=2&amp;value=3</Command>
+      <Command Name="Contrast 4">/camera_control.cgi?param=2&amp;value=4</Command>
+      <Command Name="Contrast 5">/camera_control.cgi?param=2&amp;value=5</Command>
+      <Command Name="Contrast 6">/camera_control.cgi?param=2&amp;value=6</Command>
     </ExtendedCommands>
   </Camera>
 </PTZSettings2>

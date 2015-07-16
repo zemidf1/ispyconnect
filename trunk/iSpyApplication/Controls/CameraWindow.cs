@@ -3251,6 +3251,7 @@ namespace iSpyApplication.Controls
             }
         }
 
+        [HandleProcessCorruptedStateExceptions]
         private unsafe void WriteFrame(Helper.FrameAction fa, DateTime recordingStart, ref long lastvideopts, ref double maxAlarm,
             ref Helper.FrameAction? peakFrame, ref long lastaudiopts)
         {

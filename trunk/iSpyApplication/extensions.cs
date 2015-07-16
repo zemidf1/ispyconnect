@@ -36,6 +36,12 @@ namespace iSpyApplication
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
 
+        public static string JsonSafe(this string text)
+        {
+            if (text == null) text = "";
+            return text.Replace(@"\", @"\\").Replace("\"", "\\\"");
+        }
+
         public static Color ToColor(this string colorRGB)
         {
             if (Colours.ContainsKey(colorRGB))

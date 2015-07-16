@@ -1880,25 +1880,28 @@ namespace iSpyApplication
             {
                 Program.FFMPEGMutex.WaitOne();
                 string source = cmbFile.Text;
-                var vfr= new VideoFileReader();
-
-                int i = source.IndexOf("://", StringComparison.Ordinal);
-                if (i > -1)
+                using (var vfr = new VideoFileReader())
                 {
-                    source = source.Substring(0, i).ToLower() + source.Substring(i);
-                }
 
-                vfr.Timeout = CameraControl.Camobject.settings.timeout;
-                vfr.AnalyzeDuration = (int)numAnalyseDuration.Value;
-                vfr.Cookies = CameraControl.Camobject.settings.cookies;
-                vfr.UserAgent = CameraControl.Camobject.settings.useragent;
-                vfr.Headers = CameraControl.Camobject.settings.headers;
-                vfr.RTSPMode = ddlRTSP.SelectedIndex;
-                vfr.Flags = -1;
-                vfr.NoBuffer = true;
-                vfr.Open(source);
-                vfr.ReadFrame();
-                vfr.Dispose();
+                    int i = source.IndexOf("://", StringComparison.Ordinal);
+                    if (i > -1)
+                    {
+                        source = source.Substring(0, i).ToLower() + source.Substring(i);
+                    }
+
+                    vfr.Timeout = CameraControl.Camobject.settings.timeout;
+                    vfr.AnalyzeDuration = (int) numAnalyseDuration.Value;
+                    vfr.Cookies = CameraControl.Camobject.settings.cookies;
+                    vfr.UserAgent = CameraControl.Camobject.settings.useragent;
+                    vfr.Headers = CameraControl.Camobject.settings.headers;
+                    vfr.RTSPMode = ddlRTSP.SelectedIndex;
+                    vfr.Flags = -1;
+                    vfr.NoBuffer = true;
+                    vfr.Open(source);
+                    var f = vfr.ReadFrame();
+                    if (f == null)
+                        throw new Exception("Could not read from url");
+                }
 
             }
             catch (Exception ex)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows.Forms;
 using AForge.Video;
@@ -345,6 +346,7 @@ namespace iSpyApplication.Video
         private volatile bool _bufferFull;
         ReasonToFinishPlaying _reasonToStop = ReasonToFinishPlaying.StoppedByUser;
 
+        [HandleProcessCorruptedStateExceptions]
         private void FfmpegListener()
         {
             _reasonToStop = ReasonToFinishPlaying.StoppedByUser;
@@ -542,6 +544,7 @@ namespace iSpyApplication.Video
 
         }
 
+        [HandleProcessCorruptedStateExceptions]
         private bool DecodeFrame(int analyseInterval, bool hasaudio, ref double firstmaxdrift, ref double maxdrift,
                                  ref DateTime dtAnalyse)
         {

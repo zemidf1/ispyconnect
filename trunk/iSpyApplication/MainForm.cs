@@ -749,6 +749,11 @@ namespace iSpyApplication
 
         public void Play(string filename, int objectId, string displayName)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => Play(filename,objectId,displayName)));
+                return;
+            }
             if (PlayerVLC == null)
             {
                 PlayerVLC = new PlayerVLC(displayName, this);
