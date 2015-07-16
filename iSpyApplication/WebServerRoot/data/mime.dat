@@ -26,3 +26,4 @@
 .ico; image/icon
 .webm; video/webm
 .mjpeg; video/mjpeg
+.json; application/json

@@ -22,7 +22,6 @@ using iSpyApplication.Server;
 using NAudio.Lame;
 using NAudio.Wave;
 using iSpy.Video.FFMPEG;
-using utils;
 using PictureBox = AForge.Controls.PictureBox;
 using WaveFormat = NAudio.Wave.WaveFormat;
 
@@ -44,7 +43,7 @@ namespace iSpyApplication.Controls
         private volatile float[] _levels;
         private readonly ToolTip _toolTipMic;
         private int _ttind = -1;
-        private int _reconnectFailCount = 0;
+        private int _reconnectFailCount;
         private DateTime _errorTime = DateTime.MinValue;
         private DateTime _reconnectTime = DateTime.MinValue;
 
@@ -2266,9 +2265,17 @@ namespace iSpyApplication.Controls
                         foreach (var s in OutSockets)
                         {
                             var b = Encoding.ASCII.GetBytes(bout.Length.ToString("X") + "\r\n");
-                            s.Stream.Write(b, 0, b.Length);
-                            s.Stream.Write(bout, 0, bout.Length);
-                            s.Stream.Write(bterm, 0, bterm.Length);
+                            try
+                            {
+                                s.Stream.Write(b, 0, b.Length);
+                                s.Stream.Write(bout, 0, bout.Length);
+                                s.Stream.Write(bterm, 0, bterm.Length);
+                            }
+                            catch
+                            {
+                                OutSockets.Remove(s);
+                                break;
+                            }
                         }
                     }
 

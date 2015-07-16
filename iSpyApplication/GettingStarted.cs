@@ -39,7 +39,7 @@ namespace iSpyApplication
             pnlWBContainer.Controls.Add(_wbGettingStarted);
             _wbGettingStarted.Location = new Point(0, 0);
             _wbGettingStarted.Dock = DockStyle.Fill;
-            _wbGettingStarted.Navigate(MainForm.Website + "/getting_started.aspx");
+            _wbGettingStarted.Navigate(MainForm.Website + "/getting_started.html");
 
             chkShowGettingStarted.Checked = MainForm.Conf.Enabled_ShowGettingStarted;
         }

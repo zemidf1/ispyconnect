@@ -221,7 +221,7 @@ namespace iSpyApplication.Server
         /// <summary>
         /// This function takes FileName as Input and returns the mime type..
         /// </summary>
-        /// <param name="sRequestedFile">To indentify the Mime Type</param>
+        /// <param name="sRequestedFile">To identify the Mime Type</param>
         /// <returns>Mime Type</returns>
         public string GetMimeType(string sRequestedFile)
         {
@@ -237,6 +237,7 @@ namespace iSpyApplication.Server
                 return "text/javascript";
             string sFileExt = sRequestedFile.Substring(iStartPos);
 
+            MimeTypes.ContainsKey(sFileExt);
             try
             {
                 sMimeType = MimeTypes[sFileExt].ToString();
@@ -359,7 +360,7 @@ namespace iSpyApplication.Server
         /// overloaded sendToBrowserFunction.
         /// </summary>
         /// <param name="sData">The data to be sent to the browser(client)</param>
-        /// <param name="socket">Socket reference</param>
+        /// <param name="req">the http request</param>
         public void SendToBrowser(String sData, HttpRequest req)
         {
             SendToBrowser(Encoding.ASCII.GetBytes(sData), req);
@@ -370,6 +371,7 @@ namespace iSpyApplication.Server
         /// Sends data to the browser (client)
         /// </summary>
         /// <param name="bSendData">Byte Array</param>
+        /// <param name="req"></param>
         public void SendToBrowser(Byte[] bSendData, HttpRequest req)
         {
             try
@@ -396,6 +398,7 @@ namespace iSpyApplication.Server
         /// </summary>
         /// <param name="bSendData">Byte Array</param>
         /// <param name="datalength"></param>
+        /// <param name="req">the http request</param>
         public void SendToBrowser(Byte[] bSendData, int datalength, HttpRequest req)
         {
             try
@@ -560,7 +563,7 @@ namespace iSpyApplication.Server
                                     MainForm.Conf.SSLClientRequired, SslProtocols.Default,
                                     MainForm.Conf.SSLCheckRevocation, OnAuthenticateAsServer, req);
                             }
-                            catch (Exception ex)
+                            catch
                             {
                                 DisconnectRequest(req);
                             }
@@ -613,6 +616,26 @@ namespace iSpyApplication.Server
                     if (read > 0)
                         req.ASCII += Encoding.ASCII.GetString(req.Buffer, 0, read);
 
+                    if (req.ASCII.StartsWith("<policy-file-request/>"))
+                    {
+                        req.TcpClient.Client.SendFile(Program.AppPath + @"WebServerRoot\crossdomain.xml");
+                        DisconnectRequest(req);
+                        NumErr = 0;
+                        return;
+                    }
+                    if (req.ASCII.StartsWith("TALK,"))
+                    {
+                        if (req.ASCII.Length > 10)
+                        {
+                            string[] cfg = req.ASCII.Substring(0, 10).Split(',');
+                            int cid = Convert.ToInt32(cfg[1]);
+
+                            var feed = new Thread(p => AudioIn(req, cid));
+                            feed.Start();
+                            return;
+                        }
+                    }
+
                     int iStartPos = req.ASCII.IndexOf(" HTTP", StringComparison.Ordinal);
                     if (iStartPos > -1)
                     {
@@ -649,20 +672,6 @@ namespace iSpyApplication.Server
                 String sMimeType;
                 bool bServe;
 
-                if (sBuffer.Substring(0, 4) == "TALK")
-                {
-                    string[] cfg = sBuffer.Substring(0, 10).Split(',');
-                    int cid = Convert.ToInt32(cfg[1]);
-
-                    var feed = new Thread(p => AudioIn(req, cid));
-                    feed.Start();
-                    return;
-                }
-                if (sBuffer.StartsWith("<policy-file-request/>"))
-                {
-                    req.TcpClient.Client.SendFile(Program.AppPath + @"WebServerRoot\crossdomain.xml");
-                    goto Finish;
-                }
                 if (sBuffer.Substring(0, 3) != "GET")
                 {
                     goto Finish;
@@ -689,7 +698,7 @@ namespace iSpyApplication.Server
 
                 if (!bServe)
                 {
-                    resp = "//Access this server locally through " + MainForm.Website + Environment.NewLine + "try{Denied();} catch(e){}";
+                    resp = "//Access this server via " + MainForm.Website + Environment.NewLine + "try{Denied();} catch(e){}";
                     SendHeader(sHttpVersion, "text/javascript", resp.Length, " 200 OK", 0, ref req);
                     SendToBrowser(resp, req);
                     goto Finish;
@@ -1146,17 +1155,14 @@ namespace iSpyApplication.Server
                 i = url.IndexOf("?" + var + "=", StringComparison.OrdinalIgnoreCase);
             if (i == -1)
             {
-                i = url.IndexOf(var, StringComparison.OrdinalIgnoreCase);
-                if (i == -1)
-                    return "";
-                i--;
+                return "";
             }
-
-            string txt = url.Substring(i + var.Length + 1).Trim('=');
-            if (txt.IndexOf("&", StringComparison.OrdinalIgnoreCase) != -1)
-                txt = txt.Substring(0, txt.IndexOf("&", StringComparison.OrdinalIgnoreCase));
-
-            return txt;
+            var val = url.Substring(i);
+            val = val.Substring(val.IndexOf("=", StringComparison.Ordinal) + 1);
+            int j = val.IndexOf("&", StringComparison.Ordinal);
+            if (j != -1)
+                val = val.Substring(0, j);
+            return Uri.UnescapeDataString(val);
         }
 
         private bool CheckAccess(string group, string groups)
@@ -1509,7 +1515,7 @@ namespace iSpyApplication.Server
                                         cw.Camera.Mask = (Bitmap) Image.FromFile(fn);
                                     resp = "OK";
                                 }
-                                catch (Exception)
+                                catch
                                 {
                                 }
                             }
@@ -1572,6 +1578,30 @@ namespace iSpyApplication.Server
                         }
                     }
                     resp = "OK";
+                    break;
+                case "setframerate":
+                {
+                    CameraWindow cw = _parent.GetCameraWindow(oid);
+                    if (cw != null && cw.Camera != null)
+                    {
+                        int fr = Convert.ToInt32(GetVar(sRequest, "rate"));
+                        if (fr < 1) fr = 1;
+                        cw.Camobject.settings.maxframerate = fr;
+                    }
+                    resp = "OK";
+                }
+                    break;
+                case "setrecordingframerate":
+                {
+                    CameraWindow cw = _parent.GetCameraWindow(oid);
+                    if (cw != null && cw.Camera != null)
+                    {
+                        int fr = Convert.ToInt32(GetVar(sRequest, "rate"));
+                        if (fr < 1) fr = 1;
+                        cw.Camobject.settings.maxframeraterecord = fr;
+                    }
+                    resp = "OK";
+                }
                     break;
                 case "triggerdetect":
                     if (otid == 1)
@@ -1689,7 +1719,7 @@ namespace iSpyApplication.Server
                     break;
                 case "playfile":
                     {
-                        string filename = "";
+                        string filename;
                         try
                         {
                             string subdir = Helper.GetDirectory(otid, oid);
@@ -1700,10 +1730,19 @@ namespace iSpyApplication.Server
                                     filename = filename + "audio\\";
                                     break;
                                 case 2:
+                                    filename = filename + "video\\";
                                     break;
                             }
                             filename += subdir + @"\" + fn;
-                            _parent.Play(filename, oid, "");
+                            switch ((Enums.PlaybackMode)MainForm.Conf.PlaybackMode)
+                            {
+                                case Enums.PlaybackMode.iSpy:
+                                    _parent.Play(filename, oid, "");
+                                    break;
+                                default:
+                                    Process.Start(filename);
+                                    break;
+                            }
 
                             resp = "OK";
                         }
@@ -1943,7 +1982,7 @@ namespace iSpyApplication.Server
                             case "maxframeraterecord":
                                 int mfrr;
                                 int.TryParse(value, out mfrr);
-                                cw.Camobject.settings.maxframeraterecord = Math.Max(mfrr, 1); ;
+                                cw.Camobject.settings.maxframeraterecord = Math.Max(mfrr, 1);
                                 break;                                    
                             case "localsaving":
                                 cw.Camobject.ftp.savelocal = Convert.ToBoolean(value);
@@ -3718,7 +3757,7 @@ namespace iSpyApplication.Server
                             {
                                 g.DrawImage(img, x + (camw - neww)/2, y + (camh - newh)/2, neww, newh);
                             }
-                            catch (Exception)
+                            catch
                             {
                                 //cam offline?
                             }
@@ -3731,7 +3770,7 @@ namespace iSpyApplication.Server
                                 g.CompositingMode = CompositingMode.SourceCopy;
                                 g.DrawImage(img, x, y, camw, camh);
                             }
-                            catch (Exception)
+                            catch
                             {
                                 //cam offline?
                             }
@@ -3831,7 +3870,7 @@ namespace iSpyApplication.Server
             try
             {
                 VolumeLevel vl = _parent.GetVolumeLevel(Convert.ToInt32(micId));
-                if (vl.Micobject.settings.active && vl.AudioSource!=null)
+                if (vl.Micobject.settings.active)
                 {
                     String sResponse = "";
 

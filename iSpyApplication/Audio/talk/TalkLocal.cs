@@ -10,6 +10,7 @@ namespace iSpyApplication.Audio.talk
         private bool _bTalking;
         private readonly IAudioSource _audioSource;
         private IWavePlayer _waveOut;
+        private BufferedWaveProvider _bwp;
 
         public TalkLocal(IAudioSource audioSource)
         {
@@ -19,26 +20,44 @@ namespace iSpyApplication.Audio.talk
         public void Start()
         {
             _audioSource.Listening = true;
-            if (_audioSource.WaveOutProvider != null)
+            _audioSource.DataAvailable -= AudioSourceDataAvailable;
+            _audioSource.DataAvailable -= _audioSource_DataAvailablePipe;
+            if (_audioSource.WaveOutProvider == null)
+            {
+                _bwp = new BufferedWaveProvider(_audioSource.RecordingFormat);
+                _audioSource.DataAvailable += AudioSourceDataAvailable;
+
+                _waveOut = new DirectSoundOut(100);
+                _waveOut.Init(_bwp);
+                _waveOut.Play();
+                _bTalking = true;
+            }
+            else
             {
                 _waveOut = new DirectSoundOut(100);
                 _waveOut.Init(_audioSource.WaveOutProvider);
                 _waveOut.Play();
-
-                _audioSource.DataAvailable -= AudioSourceDataAvailable;
-                _audioSource.DataAvailable += AudioSourceDataAvailable;
                 _bTalking = true;
+                _audioSource.DataAvailable += _audioSource_DataAvailablePipe;
             }
         }
-        
+
+        void _audioSource_DataAvailablePipe(object sender, DataAvailableEventArgs eventArgs)
+        {
+            //event here because it's checked for null
+        }
+
+        void AudioSourceDataAvailable(object sender, DataAvailableEventArgs eventArgs)
+        {
+            _bwp.AddSamples(eventArgs.RawData, 0, eventArgs.BytesRecorded);
+        }
+
         public void Stop()
         {
             if (_bTalking)
             {
                 lock (_obj)
                 {
-                    _audioSource.DataAvailable -= AudioSourceDataAvailable;
-
                     if (_bTalking)
                     {
                         _bTalking = false;
@@ -47,8 +66,13 @@ namespace iSpyApplication.Audio.talk
                         TalkStopped(this, EventArgs.Empty);
                 }
             }
-            if (_audioSource!=null)
+            if (_audioSource != null)
+            {
                 _audioSource.Listening = false;
+                _audioSource.DataAvailable -= AudioSourceDataAvailable;
+                _audioSource.DataAvailable -= _audioSource_DataAvailablePipe;
+            }
+
             if (_waveOut != null)
             {
                 _waveOut.Stop();
@@ -62,11 +86,5 @@ namespace iSpyApplication.Audio.talk
         }
 
         public event TalkStoppedEventHandler TalkStopped;
-        
-        
-        private void AudioSourceDataAvailable(object sender, DataAvailableEventArgs e)
-        {
-            //let it just pipe through
-        }
     }
 }
