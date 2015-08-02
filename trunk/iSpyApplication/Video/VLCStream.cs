@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows.Forms;
 using AForge.Video;
 using Declarations;
 using Declarations.Events;
@@ -18,7 +17,6 @@ using iSpyApplication.Audio.streams;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NewFrameEventHandler = AForge.Video.NewFrameEventHandler;
-using ReasonToFinishPlaying = AForge.Video.ReasonToFinishPlaying;
 
 namespace iSpyApplication.Video
 {
@@ -27,12 +25,13 @@ namespace iSpyApplication.Video
         public int FormatWidth = 320, FormatHeight = 240;
         private readonly string[] _arguments;
         private int _framesReceived;
-       
+
         private volatile bool _stopRequested, _stopping;
 
         IMediaPlayerFactory _mFactory;
         IMedia _mMedia;
         IVideoPlayer _mPlayer;
+        AudioCallbacks _ac;
 
         private Thread _thread;
         private ManualResetEvent _stopEvent;
@@ -210,7 +209,7 @@ namespace iSpyApplication.Video
                 }
                 catch
                 {
-                    
+
                 }
             }
             _stopEvent = null;
@@ -244,11 +243,13 @@ namespace iSpyApplication.Video
                 _stopEvent = new ManualResetEvent(false);
 
                 // create and start new thread
-                _thread = new Thread(WorkerThread) { Name = _source };
+                _thread = new Thread(WorkerThread) { Name = _source, IsBackground = true };
                 _thread.SetApartmentState(ApartmentState.MTA);
                 _thread.Start();
             }
         }
+
+        private Thread _eventing;
 
         private void WorkerThread()
         {
@@ -264,9 +265,6 @@ namespace iSpyApplication.Video
             {
 
             }
-
-           
-
 
             if (_mFactory == null)
             {
@@ -291,9 +289,9 @@ namespace iSpyApplication.Video
                 }
                 catch (Exception ex)
                 {
-                    MainForm.LogExceptionToFile(ex);
-                    MainForm.LogMessageToFile("VLC arguments are: " + String.Join(",", args.ToArray()));
-                    MainForm.LogMessageToFile("Using default VLC configuration.");
+                    MainForm.LogExceptionToFile(ex, "VLC Stream");
+                    MainForm.LogMessageToFile("VLC arguments are: " + String.Join(",", args.ToArray()), "VLC Stream");
+                    MainForm.LogMessageToFile("Using default VLC configuration.", "VLC Stream");
                     _mFactory = new MediaPlayerFactory(args.ToArray());
                 }
                 GC.KeepAlive(_mFactory);
@@ -315,12 +313,12 @@ namespace iSpyApplication.Video
                 }
                 catch
                 {
-                    
+
                 }
                 _mPlayer = null;
             }
 
-            
+
             _mPlayer = _mFactory.CreatePlayer<IVideoPlayer>();
             _mPlayer.Events.TimeChanged += EventsTimeChanged;
 
@@ -331,10 +329,13 @@ namespace iSpyApplication.Video
             _mPlayer.CustomAudioRenderer.SetCallbacks(ac);
             _mPlayer.CustomAudioRenderer.SetExceptionHandler(Handler);
 
+
             _mPlayer.CustomRenderer.SetCallback(FrameCallback);
             _mPlayer.CustomRenderer.SetExceptionHandler(Handler);
             GC.KeepAlive(_mPlayer);
-            
+
+
+
             _needsSetup = true;
             _stopping = false;
             _mPlayer.CustomRenderer.SetFormat(new BitmapFormat(FormatWidth, FormatHeight, ChromaType.RV24));
@@ -346,7 +347,7 @@ namespace iSpyApplication.Video
             _framesReceived = 0;
             Duration = Time = 0;
             LastFrame = DateTime.MinValue;
-            
+
 
             //check if file source (isseekable in _mPlayer is not reliable)
             Seekable = false;
@@ -360,11 +361,18 @@ namespace iSpyApplication.Video
                 Seekable = false;
             }
             _mPlayer.WindowHandle = IntPtr.Zero;
-            _mPlayer.Play();
-            
 
-            
+            _videoQueue = new ConcurrentQueue<Bitmap>();
+            _audioQueue = new ConcurrentQueue<byte[]>();
+            _eventing = new Thread(EventManager) { Name = "ffmpeg eventing", IsBackground = true };
+            _eventing.Start();
+
+            _mPlayer.Play();
+
             _stopEvent.WaitOne();
+
+            if (_eventing != null && !_eventing.Join(0))
+                _eventing.Join();
 
             if (!Seekable && !_stopRequested)
             {
@@ -383,6 +391,9 @@ namespace iSpyApplication.Video
             }
 
             DisposePlayer();
+
+            Free();
+
 
         }
 
@@ -414,12 +425,14 @@ namespace iSpyApplication.Video
                 }
             }
             _waveProvider = null;
+
             Listening = false;
         }
 
         void Handler(Exception ex)
         {
-            MainForm.LogExceptionToFile(ex);
+            MainForm.LogExceptionToFile(ex, "VLC Stream");
+
         }
 
         void EventsStateChanged(object sender, MediaStateChange e)
@@ -437,10 +450,10 @@ namespace iSpyApplication.Video
                             _stopEvent.Set();
                         }
                         catch { }
-                    }                   
+                    }
                     break;
             }
-            
+
         }
 
         public void CheckTimestamp()
@@ -454,11 +467,11 @@ namespace iSpyApplication.Video
             }
         }
 
-
         public void Stop()
         {
             Stop(true);
         }
+
         /// <summary>
         /// Stop video source.
         /// </summary>
@@ -470,17 +483,8 @@ namespace iSpyApplication.Video
                 // wait for thread stop
                 _stopping = true;
                 _stopRequested = requested;
-                try
-                {
-                    _stopEvent.Set();
-                }
-                catch
-                {
-                }
 
-                if (_thread != null && !_thread.Join(MainForm.ThreadKillDelay))
-                    _thread.Abort();
-                Free();
+                _stopEvent.Set();
             }
         }
 
@@ -587,17 +591,23 @@ namespace iSpyApplication.Video
 
         void SampleChannelPreVolumeMeter(object sender, StreamVolumeEventArgs e)
         {
-            if (LevelChanged != null && e != null && e.MaxSampleValues != null)
-                LevelChanged(this, new LevelChangedEventArgs(e.MaxSampleValues));
+            var lc = LevelChanged;
+            if (lc != null)
+            {
+                lc.Invoke(this, new LevelChangedEventArgs(e.MaxSampleValues));
+            }
         }
 
         private void SoundCallback(Sound soundData)
         {
-            if (DataAvailable == null || _needsSetup || _sampleChannel==null) return;
+            var da = DataAvailable;
+            if (da == null || _needsSetup) return;
 
-            try { 
-                var data = new byte[soundData.SamplesSize];
-                Marshal.Copy(soundData.SamplesData, data, 0, (int)soundData.SamplesSize);
+            try
+            {
+                var l = (int)soundData.SamplesSize;
+                var data = new byte[l];
+                Marshal.Copy(soundData.SamplesData, data, 0, l);
 
                 if (_realChannels > 2)
                 {
@@ -605,28 +615,16 @@ namespace iSpyApplication.Video
                     data = ToStereo(data, _realChannels);
                 }
 
-                if (_waveProvider!=null)
-                    _waveProvider.AddSamples(data, 0, data.Length);
+                _audioQueue.Enqueue(data);
 
-                if (Listening && WaveOutProvider != null)
-                {
-                    WaveOutProvider.AddSamples(data, 0, data.Length);
-                }
-
-                //forces processing of volume level without piping it out
-                var sampleBuffer = new float[data.Length];
-                try
-                {
-                    _sampleChannel.Read(sampleBuffer, 0, data.Length);
-                }
-                catch { }
-
-                if (DataAvailable != null)
-                    DataAvailable(this, new DataAvailableEventArgs((byte[])data.Clone()));
             }
-            catch
+            catch (NullReferenceException)
             {
-                //can fail at shutdown
+                //DataAvailable can be removed at any time
+            }
+            catch (Exception ex)
+            {
+                MainForm.LogExceptionToFile(ex, "VLC Audio");
             }
         }
 
@@ -650,18 +648,16 @@ namespace iSpyApplication.Video
 
         private void FrameCallback(Bitmap frame)
         {
-            _framesReceived++;
-            if (NewFrame != null && !_stopping)
+            var nf = NewFrame;
+            if (nf == null || _stopping)
             {
-                try
-                {
-                    NewFrame(this, new NewFrameEventArgs((Bitmap) frame.Clone()));
-                }
-                catch { }
+                frame.Dispose();
+                return;
             }
-            frame.Dispose();
-        }
+            _framesReceived++;
 
+            _videoQueue.Enqueue(frame);
+        }
 
         /// <summary>
         /// Calls Stop
@@ -685,9 +681,61 @@ namespace iSpyApplication.Video
 
         public void Seek(float percentage)
         {
-            if (_mPlayer!=null && _mPlayer.IsSeekable)
+            if (_mPlayer != null && _mPlayer.IsSeekable)
             {
                 _mPlayer.Position = percentage;
+            }
+        }
+
+
+
+        private ConcurrentQueue<Bitmap> _videoQueue;
+        private ConcurrentQueue<byte[]> _audioQueue;
+
+        private void EventManager()
+        {
+            byte[] audio;
+            Bitmap frame;
+
+            while (!_stopEvent.WaitOne(5, false) && !MainForm.ShuttingDown)
+            {
+                var da = DataAvailable;
+                var nf = NewFrame;
+
+                if (_videoQueue.TryDequeue(out frame))
+                {
+                    //needs to be cloned for some weird reason
+                    var b = (Bitmap)frame.Clone();
+                    //new frame
+                    if (nf != null)
+                        nf.Invoke(this, new NewFrameEventArgs(frame));
+
+                    b.Dispose();
+                    b = null;
+
+                }
+
+
+                if (_audioQueue.TryDequeue(out audio))
+                {
+                    if (da != null)
+                        da.Invoke(this, new DataAvailableEventArgs(audio));
+
+                    var sampleBuffer = new float[audio.Length];
+                    _sampleChannel.Read(sampleBuffer, 0, audio.Length);
+
+                    _waveProvider.AddSamples(audio, 0, audio.Length);
+
+                    if (WaveOutProvider != null && Listening)
+                    {
+                        WaveOutProvider.AddSamples(audio, 0, audio.Length);
+                    }
+                }
+            }
+            while (_videoQueue.TryDequeue(out frame))
+            {
+                frame.Dispose();
+                frame = null;
             }
         }
 

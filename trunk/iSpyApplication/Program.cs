@@ -51,11 +51,8 @@ internal static class Program
         }
     }
 
-    public static string ExecutableDirectory = "";
-   
+    public static string ExecutableDirectory = "";   
     public static Mutex FFMPEGMutex;
-    private static int _reportedExceptionCount;
-    private static ErrorReporting _er;
 
     /// <summary>
     /// The main entry point for the application.
@@ -228,20 +225,7 @@ internal static class Program
     {        
         try
         {
-            var ex = (Exception)e.ExceptionObject;
-           
-            if (MainForm.Conf.Enable_Error_Reporting && _reportedExceptionCount == 0)
-            {
-                if (_er == null)
-                {
-                    _er = new ErrorReporting { UnhandledException = ex };
-                    _er.ShowDialog();
-                    _er.Dispose();
-                    _er = null;
-                    _reportedExceptionCount++;
-                }
-            }
-           
+            var ex = (Exception)e.ExceptionObject;          
             MainForm.LogExceptionToFile(ex);
         }
         catch (Exception ex2)
@@ -350,21 +334,6 @@ internal static class Program
             if (e!=null && e.Exception!=null && !String.IsNullOrEmpty(e.Exception.Message) && e.Exception.Message.IndexOf("NoDriver", StringComparison.Ordinal)!=-1)
             {
                 //USB audio plugged/ unplugged (typically the cause) - no other way to catch this exception in the volume level control due to limitation in NAudio
-            }
-            else
-            {
-                if (MainForm.Conf.Enable_Error_Reporting && _reportedExceptionCount == 0 && e!=null && 
-                    e.Exception != null && e.Exception.Message.Trim() != "")
-                {
-                    if (_er == null)
-                    {
-                        _er = new ErrorReporting {UnhandledException = e.Exception};
-                        _er.ShowDialog();
-                        _er.Dispose();
-                        _er = null;
-                        _reportedExceptionCount++;
-                    }
-                }
             }
             if (e!=null)
                 MainForm.LogExceptionToFile(e.Exception);

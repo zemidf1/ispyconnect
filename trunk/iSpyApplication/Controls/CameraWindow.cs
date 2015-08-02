@@ -2812,6 +2812,10 @@ namespace iSpyApplication.Controls
                     {
                         if (vl.AudioSource == Camera.VideoSource || vl.IsClone)
                         {
+                            vl.AudioSource.LevelChanged -= vl.AudioDeviceLevelChanged;
+                            vl.AudioSource.DataAvailable -= vl.AudioDeviceDataAvailable;
+                            vl.AudioSource.AudioFinished -= vl.AudioDeviceAudioFinished;
+
                             vl.AudioSource.LevelChanged += vl.AudioDeviceLevelChanged;
                             vl.AudioSource.DataAvailable += vl.AudioDeviceDataAvailable;
                             vl.AudioSource.AudioFinished += vl.AudioDeviceAudioFinished;
@@ -2916,7 +2920,7 @@ namespace iSpyApplication.Controls
                 _recordingThread = new Thread(Record)
                                    {
                                        Name = "Recording Thread (" + Camobject.id + ")",
-                                       IsBackground = false,
+                                       IsBackground = true,
                                        Priority = ThreadPriority.Normal
                                    };
                 _recordingThread.Start();
@@ -3424,7 +3428,7 @@ namespace iSpyApplication.Controls
                 }
             }
 
-            var t = new Thread(() => AlertThread(type, msg,Camobject.id)){ Name = type+" (" + Camobject.id + ")", IsBackground = false };
+            var t = new Thread(() => AlertThread(type, msg, Camobject.id)) { Name = type + " (" + Camobject.id + ")", IsBackground = true };
             t.Start();
         }
 
@@ -4048,6 +4052,10 @@ namespace iSpyApplication.Controls
                                 XimeaSource = null;
                             }
                         }
+                        else
+                        {
+                            Camera.DisconnectNewFrameEvent();
+                        }
                     }
 
                     var vl = VolumeControl;
@@ -4388,16 +4396,10 @@ namespace iSpyApplication.Controls
                     break;
                 case 5:
                     List<String> inargs = Camobject.settings.vlcargs.Split(Environment.NewLine.ToCharArray(),
-                        StringSplitOptions.RemoveEmptyEntries)
-                        .
-                        ToList();
+                        StringSplitOptions.RemoveEmptyEntries).ToList();
                     var vlcSource = new VlcStream(Camobject.settings.videosourcestring, inargs.ToArray())
                                     {
-                                        TimeOut
-                                            =
-                                            Camobject
-                                            .settings
-                                            .timeout
+                                        TimeOut = Camobject.settings.timeout
                                     };
 
                     OpenVideoSource(vlcSource, true);
@@ -4581,10 +4583,10 @@ namespace iSpyApplication.Controls
                     XimeaSource.SetParam(CameraParameter.OffsetY,
                         Convert.ToInt32(Nv(Camobject.settings.namevaluesettings, "y")));
                     float gain;
-                    float.TryParse(Nv(Camobject.settings.namevaluesettings, "gain"), out gain);
+                    float.TryParse(Nv(Camobject.settings.namevaluesettings, "gain"), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out gain);
                     XimeaSource.SetParam(CameraParameter.Gain, gain);
                     float exp;
-                    float.TryParse(Nv(Camobject.settings.namevaluesettings, "exposure"), out exp);
+                    float.TryParse(Nv(Camobject.settings.namevaluesettings, "exposure"), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out exp);
                     XimeaSource.SetParam(CameraParameter.Exposure, exp*1000);
                     XimeaSource.SetParam(CameraParameter.Downsampling,
                         Convert.ToInt32(Nv(Camobject.settings.namevaluesettings, "downsampling")));
@@ -4815,6 +4817,11 @@ namespace iSpyApplication.Controls
                     var source = cw.Camera.VideoSource;
                     Camera = new Camera(source);
 
+                    Camera.NewFrame -= CameraNewFrame;
+                    Camera.PlayingFinished -= VideoDeviceVideoFinished;
+                    Camera.Alarm -= CameraAlarm;
+                    Camera.ErrorHandler -= CameraWindow_ErrorHandler;
+                    
                     Camera.NewFrame += CameraNewFrame;
                     Camera.PlayingFinished += VideoDeviceVideoFinished;
                     Camera.Alarm += CameraAlarm;

@@ -470,7 +470,7 @@ namespace iSpyApplication
                 MainForm.LogExceptionToFile(ex);
             }
 
-            var manager = new Thread(p => PortScannerManager(host)) { Name = "Port Scanner", IsBackground = false, Priority = ThreadPriority.Normal };
+            var manager = new Thread(p => PortScannerManager(host)) { Name = "Port Scanner", IsBackground = true, Priority = ThreadPriority.Normal };
             manager.Start();
         }
 
@@ -814,72 +814,30 @@ namespace iSpyApplication
  
         }
 
-        private static bool SendHTTPReq(string addr, string cookies, string login, string password)
+        private static bool SendHTTPReq(string source, string cookies, string login, string password)
         {
             bool b = false;
             HttpStatusCode sc = 0;
-            try
-            {
-                var wc = (HttpWebRequest) WebRequest.Create(addr); //args[0]);
-                wc.AllowAutoRedirect = true;
-                wc.UserAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/0.2.153.1 Safari/525.19";
-                wc.Timeout = 3000;
-                wc.ReadWriteTimeout = 3000;
-                wc.Method = "GET";
-                var authInfo = "";
-                if (!String.IsNullOrEmpty(login))
-                {
-                    authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(login + ":" + password));
-                    wc.Headers["Authorization"] = "Basic " + authInfo;
-                }
 
-                if (!String.IsNullOrEmpty(cookies))
+            HttpWebRequest req;
+            var res = ConnectionFactory.GetResponse(source, cookies, login, password, out req);
+            if (res != null)
+            {
+                sc = res.StatusCode;
+                if (sc == HttpStatusCode.OK)
                 {
-                    cookies = cookies.Replace("[AUTH]", authInfo);
-                    var myContainer = new CookieContainer();
-                    string[] coll = cookies.Split(';');
-                    foreach (var ckie in coll)
+                    string ct = res.ContentType.ToLower();
+                    if (ct.IndexOf("text", StringComparison.Ordinal) == -1)
                     {
-                        if (!String.IsNullOrEmpty(ckie))
-                        {
-                            string[] nv = ckie.Split('=');
-                            if (nv.Length == 2)
-                            {
-                                var cookie = new Cookie(nv[0].Trim(), nv[1].Trim());
-                                myContainer.Add(new Uri(wc.RequestUri.ToString()), cookie);
-                            }
-                        }
-                    }
-                    wc.CookieContainer = myContainer;
-                }
-                using (var res = (HttpWebResponse) wc.GetResponse())
-                {
-                    sc = res.StatusCode;
-                    if (sc==HttpStatusCode.OK)
-                    {
-                        string ct = res.ContentType.ToLower();
-                        if (ct.IndexOf("text", StringComparison.Ordinal)==-1)
-                        {
-                            b = true;
-                        }
+                        b = true;
                     }
                 }
-                
+                res.Close();
             }
-            catch (WebException we)
-            {
-                if (we.Response != null)
-                {
-                    //sc = ((HttpWebResponse) we.Response).StatusCode;
-                }
-            }
-            catch (Exception ex)
-            {
-                MainForm.LogExceptionToFile(ex);
-            }
-            MainForm.LogMessageToFile("Status " + sc + " at " + addr);
 
-            return b;// sc == HttpStatusCode.OK;
+            MainForm.LogMessageToFile("Status " + sc + " at " + source, "Uri Checker");
+
+            return b;
         }
 
         private static bool SendRTSPReq(string addr, string login, string password)
@@ -1144,7 +1102,7 @@ namespace iSpyApplication
                 AudioSourceType = -1;
                 if (!String.IsNullOrEmpty(s.AudioSource))
                 {
-                    switch (s.AudioSource)
+                    switch (s.AudioSource.ToUpper())
                     {
                         case "FFMPEG":
                             AudioSourceType = 3;
@@ -1154,10 +1112,12 @@ namespace iSpyApplication
                             if (!_vlc)
                                 AudioSourceType = 3;
                             break;
+                        case "WAVSTREAM":
+                            AudioSourceType = 6;
+                            break;
                     }
                     AudioUrl = GetAddr(s, true);
                 }
-
 
                 Ptzid = -1;
 

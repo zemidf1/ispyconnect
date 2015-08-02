@@ -192,7 +192,7 @@ namespace iSpyApplication
             {
                 if (warnonerror && MessageBox.Show(LocRm.GetString("LogStartError").Replace("[MESSAGE]", ex.Message), LocRm.GetString("Warning"), MessageBoxButtons.YesNo) == DialogResult.No)
                 {
-                    Reallyclose = true;
+                    ShuttingDown = true;
                     Close();
                 }
             }

@@ -263,7 +263,7 @@ namespace iSpyApplication.Audio.streams
             try
             {
                 DateTime req = DateTime.UtcNow;
-                while (!_stopEvent.WaitOne(10, false) && !MainForm.Reallyclose)
+                while (!_stopEvent.WaitOne(10, false) && !MainForm.ShuttingDown)
                 {
                     byte[] data = _afr.ReadAudioFrame();
                     if (data == null || data.Equals(0))

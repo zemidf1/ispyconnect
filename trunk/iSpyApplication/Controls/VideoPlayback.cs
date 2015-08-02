@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 using PictureBox = AForge.Controls.PictureBox;
 
@@ -254,7 +255,7 @@ namespace iSpyApplication.Controls
                             for (int i = 0; i < _datapoints.Length; i++)
                             {
                                 float d;
-                                if (float.TryParse(_datapoints[i], out d))
+                                if (float.TryParse(_datapoints[i], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d))
                                 {
                                     if (d >= trigger && d <= triggermax)
                                     {

@@ -415,6 +415,7 @@
     <Compile Include="Audio\streams\AudioInStream.cs" />
     <Compile Include="Audio\streams\FFMPEGStream.cs" />
     <Compile Include="Audio\streams\GainHelper.cs" />
+    <Compile Include="Audio\streams\WavStream.cs" />
     <Compile Include="Audio\talk\TalkHelper.cs" />
     <Compile Include="Audio\talk\TalkIPWebcamAndroid.cs" />
     <Compile Include="Audio\talk\TalkLocal.cs" />
@@ -428,6 +429,7 @@
     <Compile Include="CommandButtons.Designer.cs">
       <DependentUpon>CommandButtons.cs</DependentUpon>
     </Compile>
+    <Compile Include="ConnectionFactory.cs" />
     <Compile Include="Controls\ActionEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -958,12 +960,6 @@
     <Compile Include="C2BPComparers.cs" />
     <Compile Include="LocRM.cs" />
     <Compile Include="Video\DesktopStream.cs" />
-    <Compile Include="ErrorReport.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ErrorReport.Designer.cs">
-      <DependentUpon>ErrorReport.cs</DependentUpon>
-    </Compile>
     <Compile Include="Firewall.cs" />
     <Compile Include="Controls\FloorPlan.cs">
       <SubType>Component</SubType>
@@ -1000,6 +996,11 @@
     <Compile Include="ViewController.Designer.cs">
       <DependentUpon>ViewController.cs</DependentUpon>
     </Compile>
+    <Compile Include="Web References\Reporting\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
     <Compile Include="X509.cs" />
     <Compile Include="XML\Translations.cs" />
     <Compile Include="upnp.cs" />
@@ -1008,12 +1009,6 @@
     </Compile>
     <Compile Include="VideoSource.Designer.cs">
       <DependentUpon>VideoSource.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Feedback.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Feedback.Designer.cs">
-      <DependentUpon>Feedback.cs</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs">
       <SubType>Form</SubType>
@@ -1038,11 +1033,6 @@
     <Compile Include="Vision\Tools.cs" />
     <Compile Include="Vision\TwoFramesColorDifferenceDetector.cs" />
     <Compile Include="Web References\iSpyWS\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.map</DependentUpon>
-    </Compile>
-    <Compile Include="Web References\Reporting\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
@@ -1213,6 +1203,11 @@
     <Content Include="sounds\wiggle.wav" />
     <None Include="Web References\iSpyWS\ispyapi.disco" />
     <Content Include="VLC64\readme.txt" />
+    <None Include="Web References\Reporting\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Web References\Reporting\reporting.disco" />
     <Content Include="WebServerRoot\notfound.jpg" />
     <Content Include="XML\config.xml">
       <SubType>Designer</SubType>
@@ -1473,9 +1468,6 @@
     <EmbeddedResource Include="NetworkTroubleshooter.resx">
       <DependentUpon>NetworkTroubleshooter.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ErrorReport.resx">
-      <DependentUpon>ErrorReport.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Controls\FloorPlan.resx">
       <DependentUpon>FloorPlan.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -1493,10 +1485,6 @@
     <EmbeddedResource Include="VideoSource.resx">
       <DependentUpon>VideoSource.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Feedback.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>Feedback.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Settings.resx">
       <DependentUpon>Settings.cs</DependentUpon>
@@ -1528,9 +1516,7 @@
     </Content>
     <Content Include="nothing.png" />
     <None Include="Web References\iSpyWS\ispyapi.wsdl" />
-    <None Include="Web References\Reporting\reporting.disco">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="Web References\Reporting\reporting.wsdl" />
     <None Include="XML\config.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -1615,19 +1601,22 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </None>
-    <None Include="Web References\Reporting\Reference.map">
-      <Generator>MSDiscoCodeGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Web References\Reporting\reporting.wsdl">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
+    <WebReferenceUrl Include="http://www.ispyconnect.com/webservices/reporting.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\Reporting\</RelPath>
+      <UpdateFromURL>http://www.ispyconnect.com/webservices/reporting.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>iSpy_Reporting_Reporting</CachedSettingsPropName>
+    </WebReferenceUrl>
     <WebReferenceUrl Include="https://www.ispyconnect.com/webservices/ispyapi.asmx">
       <UrlBehavior>Static</UrlBehavior>
       <RelPath>Web References\iSpyWS\</RelPath>
@@ -1638,17 +1627,6 @@
       </CachedDynamicPropName>
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>iSpy_iSpyWS_iSpy</CachedSettingsPropName>
-    </WebReferenceUrl>
-    <WebReferenceUrl Include="http://www.ispyconnect.com/Webservices/reporting.asmx">
-      <UrlBehavior>Static</UrlBehavior>
-      <RelPath>Web References\Reporting\</RelPath>
-      <UpdateFromURL>http://www.ispyconnect.com/Webservices/reporting.asmx</UpdateFromURL>
-      <ServiceLocationURL>
-      </ServiceLocationURL>
-      <CachedDynamicPropName>
-      </CachedDynamicPropName>
-      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
-      <CachedSettingsPropName>motion_Reporting_Reporting</CachedSettingsPropName>
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>

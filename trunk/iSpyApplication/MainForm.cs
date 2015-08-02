@@ -97,7 +97,7 @@ namespace iSpyApplication
         private static readonly List<FilePreview> Masterfilelist = new List<FilePreview>();
 
         public static EncoderParameters EncoderParams;
-        public static bool Reallyclose = false;
+        public static bool ShuttingDown = false;
         public static string Webserver = "http://www.ispyconnect.com";
         public static string WebserverSecure = "https://www.ispyconnect.com";
 
@@ -208,7 +208,6 @@ namespace iSpyApplication
         private PersistWindowState _mWindowState;
         private MenuItem _menuItem1;
         private MenuItem _menuItem10;
-        private MenuItem _menuItem11;
         private MenuItem _menuItem12;
         private MenuItem _menuItem13;
         private MenuItem _menuItem14;
@@ -692,7 +691,7 @@ namespace iSpyApplication
         // Close the main form
         private void ExitFileItemClick(object sender, EventArgs e)
         {
-            Reallyclose = true;
+            ShuttingDown = true;
             Close();
         }
 
@@ -985,7 +984,7 @@ namespace iSpyApplication
             Iconfont = new Font(FontFamily.GenericSansSerif, Conf.BigButtons ? 22 : 15, FontStyle.Bold,
                 GraphicsUnit.Pixel);
             double dOpacity;
-            Double.TryParse(Conf.Opacity.ToString(CultureInfo.InvariantCulture), out dOpacity);
+            Double.TryParse(Conf.Opacity.ToString(CultureInfo.InvariantCulture), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out dOpacity);
             Opacity = dOpacity/100.0;
 
 
@@ -1267,7 +1266,7 @@ namespace iSpyApplication
                 }
             }
 
-            var t = new Thread(()=>ConnectServices()) {IsBackground = false};
+            var t = new Thread(()=>ConnectServices()) {IsBackground = true};
             t.Start();
 
             _updateTimer.Start();
@@ -1457,7 +1456,6 @@ namespace iSpyApplication
             _localCameraToolStripMenuItem.Text = LocRm.GetString("LocalCamera");
             _menuItem1.Text = "-";
             _menuItem10.Text = LocRm.GetString("checkForUpdates");
-            _menuItem11.Text = LocRm.GetString("reportBugFeedback");
             _menuItem13.Text = "-";
             _menuItem15.Text = LocRm.GetString("ResetAllRecordingCounters");
             _menuItem16.Text = LocRm.GetString("View");
@@ -2202,10 +2200,7 @@ namespace iSpyApplication
 
         private void MenuItem11Click(object sender, EventArgs e)
         {
-            using (var fb = new Feedback())
-            {
-                fb.ShowDialog(this);
-            }
+            
         }
 
         private void MainFormResize(object sender, EventArgs e)
@@ -2282,14 +2277,14 @@ namespace iSpyApplication
         {
             if (e.CloseReason != CloseReason.WindowsShutDown)
             {
-                if (Conf.MinimiseOnClose && !Reallyclose)
+                if (Conf.MinimiseOnClose && !ShuttingDown)
                 {
                     e.Cancel = true;
                     WindowState = FormWindowState.Minimized;
                     return;
                 }
             }
-            Reallyclose = true;
+            ShuttingDown = true;
             if (_mIcp != null && _mCookie != -1)
             {
                 try
@@ -2656,7 +2651,7 @@ namespace iSpyApplication
 
         private void ExitToolStripMenuItemClick(object sender, EventArgs e)
         {
-            Reallyclose = true;
+            ShuttingDown = true;
             Close();
         }
 
@@ -3467,7 +3462,7 @@ namespace iSpyApplication
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Reallyclose = true;
+            ShuttingDown = true;
             Close();
         }
 
@@ -3479,7 +3474,7 @@ namespace iSpyApplication
                 Invoke(new Delegates.CloseDelegate(ExternalClose));
                 return;
             }
-            Reallyclose = true;
+            ShuttingDown = true;
             Close();
         }
 
@@ -4399,7 +4394,6 @@ namespace iSpyApplication
             this._menuItem24 = new System.Windows.Forms.MenuItem();
             this._menuItem10 = new System.Windows.Forms.MenuItem();
             this._menuItem38 = new System.Windows.Forms.MenuItem();
-            this._menuItem11 = new System.Windows.Forms.MenuItem();
             this._menuItem5 = new System.Windows.Forms.MenuItem();
             this._menuItem27 = new System.Windows.Forms.MenuItem();
             this._menuItem26 = new System.Windows.Forms.MenuItem();
@@ -5066,7 +5060,6 @@ namespace iSpyApplication
             this._menuItem24,
             this._menuItem10,
             this._menuItem38,
-            this._menuItem11,
             this._menuItem5,
             this._menuItem27,
             this._menuItem26});
@@ -5107,26 +5100,20 @@ namespace iSpyApplication
             this._menuItem38.Text = "View Update Information";
             this._menuItem38.Click += new System.EventHandler(this.MenuItem38Click);
             // 
-            // _menuItem11
-            // 
-            this._menuItem11.Index = 6;
-            this._menuItem11.Text = "&Report Bug/ Feedback";
-            this._menuItem11.Click += new System.EventHandler(this.MenuItem11Click);
-            // 
             // _menuItem5
             // 
-            this._menuItem5.Index = 7;
+            this._menuItem5.Index = 6;
             this._menuItem5.Text = "Go to &Website";
             this._menuItem5.Click += new System.EventHandler(this.MenuItem5Click);
             // 
             // _menuItem27
             // 
-            this._menuItem27.Index = 8;
+            this._menuItem27.Index = 7;
             this._menuItem27.Text = "-";
             // 
             // _menuItem26
             // 
-            this._menuItem26.Index = 9;
+            this._menuItem26.Index = 8;
             this._menuItem26.Text = "&Support iSpy With a Donation";
             this._menuItem26.Click += new System.EventHandler(this.MenuItem26Click);
             // 

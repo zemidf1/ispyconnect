@@ -432,7 +432,7 @@ namespace iSpyApplication.Server
             _connectedSockets = new List<HttpRequest>();
             NumErr = 0;
 
-            while (!MainForm.Reallyclose && NumErr < 5 && _myListener != null)
+            while (!MainForm.ShuttingDown && NumErr < 5 && _myListener != null)
             {
                 try
                 {
@@ -3446,8 +3446,8 @@ namespace iSpyApplication.Server
             if (wh.Length == 2)
             {
                 double dw, dh;
-                double.TryParse(wh[0], out dw);
-                double.TryParse(wh[1], out dh);
+                double.TryParse(wh[0], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out dw);
+                double.TryParse(wh[1], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out dh);
                 w = Convert.ToInt32(dw);
                 h = Convert.ToInt32(dh);
             }

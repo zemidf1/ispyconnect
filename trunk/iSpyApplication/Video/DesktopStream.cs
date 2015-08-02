@@ -165,7 +165,7 @@ namespace iSpyApplication.Video
         private void WorkerThread()
         {
             var res = ReasonToFinishPlaying.StoppedByUser;
-            while (!_stopEvent.WaitOne(0, false) && !MainForm.Reallyclose)
+            while (!_stopEvent.WaitOne(0, false) && !MainForm.ShuttingDown)
             {
                 try
                 {

@@ -141,34 +141,6 @@ namespace iSpyApplication
             Wsa.SendAlertWithImageAsync(MainForm.Conf.WSUsername, MainForm.Conf.WSPassword, emailAddress, subject, message, imageData,Guid.NewGuid());
         }
 
-        //public static void SendAlertWithImages(string emailAddress, string subject, string message, List<byte[]> images)
-        //{
-        //    using (var client = new HttpClient())
-        //    {
-        //        using (var formData = new MultipartFormDataContent())
-        //        {
-        //            formData.Add(new StringContent(emailAddress), "emailAddress");
-        //            formData.Add(new StringContent(subject), "subject");
-        //            formData.Add(new StringContent(message), "message");
-
-        //            int i = 1;
-        //            foreach (byte[] b in images)
-        //            {
-        //                HttpContent bytesContent = new ByteArrayContent(b);
-        //                formData.Add(bytesContent, "image_" + i + ".jpg");
-        //                i++;
-        //            }
-
-        //            var response =
-        //                client.PostAsync(MainForm.WebserverSecure + "/webservices/PostInterface.aspx", formData).Result;
-        //            if (!response.IsSuccessStatusCode)
-        //            {
-        //                MainForm.LogErrorToFile("Send multi image failed: " + response.StatusCode);
-        //            }
-        //        }
-        //    }
-        //}
-
         public static string ExternalIPv4(bool refresh)
         {
             if (_externalIP != "" && !refresh)
@@ -243,7 +215,7 @@ namespace iSpyApplication
 
         private static void ForceSync(string internalIPAddress, int internalPort, string settings)
         {
-            if (LoginFailed || !WebsiteLive || !MainForm.Conf.ServicesEnabled)
+            if (LoginFailed || !WebsiteLive || !MainForm.Conf.ServicesEnabled || MainForm.ShuttingDown)
                 return;
 
             MainForm.NeedsSync = false;
@@ -258,7 +230,7 @@ namespace iSpyApplication
 
         public static void PingServer()
         {
-            if (!MainForm.Conf.ServicesEnabled || LoginFailed)
+            if (!MainForm.Conf.ServicesEnabled || LoginFailed || MainForm.ShuttingDown)
                 return;
             
             try
