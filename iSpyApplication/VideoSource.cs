@@ -346,11 +346,11 @@ namespace iSpyApplication
                     numXimeaOffestY.Value = Convert.ToInt32(NV("y"));
 
                     decimal gain;
-                    decimal.TryParse(NV("gain"), out gain);
+                    decimal.TryParse(NV("gain"), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out gain);
                     numXimeaGain.Value =  gain;
 
                     decimal exp;
-                    decimal.TryParse(NV("exposure"), out exp);
+                    decimal.TryParse(NV("exposure"), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out exp);
                     if (exp == 0)
                         exp = 100;
                     numXimeaExposure.Value = exp;

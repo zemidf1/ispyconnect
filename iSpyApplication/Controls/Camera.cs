@@ -54,7 +54,6 @@ namespace iSpyApplication.Controls
         private double _alarmLevel = 0.0005;
         private double _alarmLevelMax = 1;
         private int _height = -1;
-        private DateTime _lastframeProcessed = DateTime.MinValue;
         private DateTime _lastframeEvent = DateTime.MinValue;
 
         private int _width = -1;
@@ -408,7 +407,6 @@ namespace iSpyApplication.Controls
             {
                 _requestedToStop = false;
                 _framerates = new Queue<double>();
-                _lastframeProcessed = DateTime.MinValue;
                 _lastframeEvent = DateTime.MinValue;
                 _motionRecentlyDetected = false;
                 if (!CW.IsClone)
@@ -459,10 +457,18 @@ namespace iSpyApplication.Controls
         }
 
         internal RotateFlipType RotateFlipType = RotateFlipType.RotateNoneFlipNone;
+        
+        public void DisconnectNewFrameEvent()
+        {
+            if (VideoSource != null)
+                VideoSource.NewFrame -= VideoNewFrame;
+        }
 
         private void VideoNewFrame(object sender, NewFrameEventArgs e)
         {
-            if (_requestedToStop || NewFrame==null || e.Frame==null)
+            var nf = NewFrame;
+            var f = e.Frame;
+            if (_requestedToStop || nf==null || f==null)
                 return;
     
             
@@ -474,94 +480,87 @@ namespace iSpyApplication.Controls
                 }
                 CalculateFramerates();
             }
-            else
-            {
-                _lastframeEvent = Helper.Now;
-            }
+            
+            _lastframeEvent = Helper.Now;           
             
             Bitmap bmOrig = null;
             bool bMotion = false;
             lock (_sync)
-            {
-                _lastframeProcessed = Helper.Now;               
+            {            
                 try
                 {
-                    if (e.Frame != null)
+                    bmOrig = ResizeBmOrig(f);
+
+                    if (RotateFlipType != RotateFlipType.RotateNoneFlipNone)
                     {
-                        bmOrig = ResizeBmOrig(e);
-                        
-
-                        if (RotateFlipType != RotateFlipType.RotateNoneFlipNone)
-                        {
-                            bmOrig.RotateFlip(RotateFlipType);                           
-                        }
+                        bmOrig.RotateFlip(RotateFlipType);                           
+                    }
                          
-                        _width = bmOrig.Width;
-                        _height = bmOrig.Height;
+                    _width = bmOrig.Width;
+                    _height = bmOrig.Height;
                         
-                        if (ZPoint == Point.Empty)
-                        {
-                            ZPoint = new Point(bmOrig.Width / 2, bmOrig.Height / 2);
-                        } 
+                    if (ZPoint == Point.Empty)
+                    {
+                        ZPoint = new Point(bmOrig.Width / 2, bmOrig.Height / 2);
+                    } 
 
-                        if (CW.NeedMotionZones)
-                            CW.NeedMotionZones = !SetMotionZones(CW.Camobject.detector.motionzones);
+                    if (CW.NeedMotionZones)
+                        CW.NeedMotionZones = !SetMotionZones(CW.Camobject.detector.motionzones);
 
-                        if (Mask != null)
+                    if (Mask != null)
+                    {
+                        ApplyMask(bmOrig);
+                    }
+
+                    if (CW.Camobject.alerts.active && Plugin != null && Alarm!=null)
+                    {
+                        bmOrig = RunPlugin(bmOrig);
+                    }
+
+                    var bmd = bmOrig.LockBits(new Rectangle(0, 0, bmOrig.Width, bmOrig.Height), ImageLockMode.ReadWrite, bmOrig.PixelFormat);
+
+                    //this converts the image into a windows displayable image so do it regardless
+                    using (var lfu = new UnmanagedImage(bmd))
+                    {
+                        if (_motionDetector != null)
                         {
-                            ApplyMask(bmOrig);
+                            bMotion = ApplyMotionDetector(lfu);
+                        }
+                        else
+                        {
+                            MotionDetected = false;
                         }
 
-                        if (CW.Camobject.alerts.active && Plugin != null && Alarm!=null)
+                        if (CW.Camobject.settings.FishEyeCorrect)
                         {
-                            bmOrig = RunPlugin(bmOrig);
+                            _feCorrect.Correct(lfu, CW.Camobject.settings.FishEyeFocalLengthPX,
+                                CW.Camobject.settings.FishEyeLimit, CW.Camobject.settings.FishEyeScale, ZPoint.X,
+                                ZPoint.Y);
                         }
 
-                        var bmd = bmOrig.LockBits(new Rectangle(0, 0, bmOrig.Width, bmOrig.Height), ImageLockMode.ReadWrite, bmOrig.PixelFormat);
-
-                        //this converts the image into a windows displayable image so do it regardless
-                        using (var lfu = new UnmanagedImage(bmd))
+                        if (ZFactor > 1)
                         {
-                            if (_motionDetector != null)
+                            var f1 = new ResizeNearestNeighbor(lfu.Width, lfu.Height);
+                            var f2 = new Crop(ViewRectangle);
+                            try
                             {
-                                bMotion = ApplyMotionDetector(lfu);
-                            }
-                            else
-                            {
-                                MotionDetected = false;
-                            }
-
-                            if (CW.Camobject.settings.FishEyeCorrect)
-                            {
-                                _feCorrect.Correct(lfu, CW.Camobject.settings.FishEyeFocalLengthPX,
-                                    CW.Camobject.settings.FishEyeLimit, CW.Camobject.settings.FishEyeScale, ZPoint.X,
-                                    ZPoint.Y);
-                            }
-
-                            if (ZFactor > 1)
-                            {
-                                var f1 = new ResizeNearestNeighbor(lfu.Width, lfu.Height);
-                                var f2 = new Crop(ViewRectangle);
-                                try
+                                using (var imgTemp = f2.Apply(lfu))
                                 {
-                                    using (var imgTemp = f2.Apply(lfu))
-                                    {
-                                        f1.Apply(imgTemp, lfu);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    if (ErrorHandler != null)
-                                        ErrorHandler(ex.Message);
+                                    f1.Apply(imgTemp, lfu);
                                 }
                             }
+                            catch (Exception ex)
+                            {
+                                if (ErrorHandler != null)
+                                    ErrorHandler(ex.Message);
+                            }
+                        }
 
                             
-                        }
-                        bmOrig.UnlockBits(bmd);
-                        PiP(bmOrig);
-                        AddTimestamp(bmOrig);                       
                     }
+                    bmOrig.UnlockBits(bmd);
+                    PiP(bmOrig);
+                    AddTimestamp(bmOrig);                       
                 }
                 catch (UnsupportedImageFormatException ex)
                 {
@@ -599,9 +598,9 @@ namespace iSpyApplication.Controls
                 }
             }
 
-            if (NewFrame != null && !_requestedToStop && bmOrig!=null)
+            if (!_requestedToStop)
             {
-                NewFrame(this, new NewFrameEventArgs(bmOrig));
+                nf.Invoke(this, new NewFrameEventArgs(bmOrig));
             }
             if (bMotion)
             {
@@ -630,12 +629,16 @@ namespace iSpyApplication.Controls
 
                         foreach (var pip in _PiPEntries)
                         {
-                            if (pip.CW.IsEnabled)
+                            if (pip.CW != null && !pip.CW.VideoSourceErrorState && !pip.CW.IsReconnect)
                             {
                                 var bmppip = pip.CW.LastFrame;
                                 if (bmppip != null)
                                 {
-                                    g.DrawImage(bmppip, new Rectangle(Convert.ToInt32(pip.R.X * wmulti), Convert.ToInt32(pip.R.Y * hmulti), Convert.ToInt32(pip.R.Width * wmulti), Convert.ToInt32(pip.R.Height * hmulti)));
+                                    var r = new Rectangle(Convert.ToInt32(pip.R.X*wmulti),
+                                        Convert.ToInt32(pip.R.Y*hmulti), Convert.ToInt32(pip.R.Width*wmulti),
+                                        Convert.ToInt32(pip.R.Height*hmulti));
+
+                                    g.DrawImage(bmppip, r);
                                 }
                             }
 
@@ -843,8 +846,9 @@ namespace iSpyApplication.Controls
             MotionDetected = true;
             _motionlastdetected = Helper.Now;
             _motionRecentlyDetected = true;
-            if (Alarm!=null)
-                Alarm(sender, new EventArgs());
+            var al = Alarm;
+            if (al!=null)
+                al.BeginInvoke(sender, new EventArgs(),null,null);
         }
 
         internal void TriggerPlugin()
@@ -852,11 +856,11 @@ namespace iSpyApplication.Controls
             _pluginTrigger = true;
         }
 
-        private Bitmap ResizeBmOrig(NewFrameEventArgs e)
+        private Bitmap ResizeBmOrig(Bitmap f)
         {
             if (CW.Camobject.settings.resize &&
-                (CW.Camobject.settings.desktopresizewidth != e.Frame.Width ||
-                 CW.Camobject.settings.desktopresizeheight != e.Frame.Height))
+                (CW.Camobject.settings.desktopresizewidth != f.Width ||
+                 CW.Camobject.settings.desktopresizeheight != f.Height))
             {
 
                 var result = new Bitmap(CW.Camobject.settings.desktopresizewidth, CW.Camobject.settings.desktopresizeheight,
@@ -870,8 +874,7 @@ namespace iSpyApplication.Controls
                         g2.PixelOffsetMode = PixelOffsetMode.Half;
                         g2.SmoothingMode = SmoothingMode.None;
                         g2.InterpolationMode = InterpolationMode.Default;
-                        //g2.GdiDrawImage(e.Frame, 0, 0, result.Width, result.Height);
-                        g2.DrawImage(e.Frame, 0, 0, result.Width, result.Height);
+                        g2.DrawImage(f, 0, 0, result.Width, result.Height);
                     }
                     return result;
                 }
@@ -882,8 +885,8 @@ namespace iSpyApplication.Controls
                 
             }
             if (CW.HasClones)
-                return new Bitmap(e.Frame);
-            return e.Frame;                    
+                return new Bitmap(f);
+            return f;                    
         }
 
         private void CalculateFramerates()
@@ -895,7 +898,7 @@ namespace iSpyApplication.Controls
                 _nextFrameTarget = d.AddMilliseconds(dMin);
 
 
-            TimeSpan tsFr = d - _lastframeProcessed;
+            TimeSpan tsFr = d - _lastframeEvent;
             _framerates.Enqueue(1000d/tsFr.TotalMilliseconds);
             if (_framerates.Count >= 30)
                 _framerates.Dequeue();

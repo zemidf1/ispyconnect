@@ -5774,4 +5774,36 @@ copy or delete as many lines as you need.-->
       <Command Name="Contrast 6">/camera_control.cgi?param=2&amp;value=6</Command>
     </ExtendedCommands>
   </Camera>
+  <Camera id="211">
+    <Makes>
+      <Make Name="EasyN" Model="1BF" />
+    </Makes>
+    <CommandURL>/web/cgi-bin/hi3510/</CommandURL>
+    <Commands>
+      <Left>ptzctrl.cgi?-step=0&amp;-act=left</Left>
+      <Right>ptzctrl.cgi?-step=0&amp;-act=right</Right>
+      <Up>ptzctrl.cgi?-step=0&amp;-act=up</Up>
+      <Down>ptzctrl.cgi?-step=0&amp;-act=down</Down>
+      <Stop>ptzctrl.cgi?-step=0&amp;-act=stop</Stop>
+    </Commands>
+    <ExtendedCommands>
+      <Command Name="H Scan">ptzctrl.cgi?-step=0&amp;-act=hscan</Command>
+      <Command Name="V Scan">ptzctrl.cgi?-step=0&amp;-act=vscan</Command>
+      <Command Name="Playback">param.cgi?cmd=getsetupflag</Command>
+      <Command Name="Go Preset 1">param.cgi?cmd=preset&amp;-act=goto&amp;-number=0</Command>
+      <Command Name="Go Preset 2">param.cgi?cmd=preset&amp;-act=goto&amp;-number=1</Command>
+      <Command Name="Go Preset 3">param.cgi?cmd=preset&amp;-act=goto&amp;-number=2</Command>
+      <Command Name="Go Preset 4">param.cgi?cmd=preset&amp;-act=goto&amp;-number=3</Command>
+      <Command Name="Go Preset 5">param.cgi?cmd=preset&amp;-act=goto&amp;-number=4</Command>
+      <Command Name="Go Preset 6">param.cgi?cmd=preset&amp;-act=goto&amp;-number=5</Command>
+      <Command Name="Go Preset 7">param.cgi?cmd=preset&amp;-act=goto&amp;-number=6</Command>
+      <Command Name="Set Preset 1">param.cgi?cmd=preset&amp;-act=set&amp;-status=1&amp;-number=0</Command>
+      <Command Name="Set Preset 2">param.cgi?cmd=preset&amp;-act=set&amp;-status=1&amp;-number=1</Command>
+      <Command Name="Set Preset 3">param.cgi?cmd=preset&amp;-act=set&amp;-status=1&amp;-number=2</Command>
+      <Command Name="Set Preset 4">param.cgi?cmd=preset&amp;-act=set&amp;-status=1&amp;-number=3</Command>
+      <Command Name="Set Preset 5">param.cgi?cmd=preset&amp;-act=set&amp;-status=1&amp;-number=4</Command>
+      <Command Name="Set Preset 6">param.cgi?cmd=preset&amp;-act=set&amp;-status=1&amp;-number=5</Command>
+      <Command Name="Set Preset 7">param.cgi?cmd=preset&amp;-act=set&amp;-status=1&amp;-number=6</Command>
+    </ExtendedCommands>
+  </Camera>
 </PTZSettings2>

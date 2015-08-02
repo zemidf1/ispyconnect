@@ -74,6 +74,10 @@ namespace iSpyApplication
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.button5 = new System.Windows.Forms.Button();
             this.ofd = new System.Windows.Forms.OpenFileDialog();
+            this.tabPage7 = new System.Windows.Forms.TabPage();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txtWavStreamURL = new System.Windows.Forms.TextBox();
             this.tcAudioSource.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -91,6 +95,8 @@ namespace iSpyApplication
             this.tableLayoutPanel10.SuspendLayout();
             this.panel1.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
+            this.tabPage7.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // ddlDevice
@@ -135,6 +141,7 @@ namespace iSpyApplication
             this.tcAudioSource.Controls.Add(this.tabPage4);
             this.tcAudioSource.Controls.Add(this.tabPage5);
             this.tcAudioSource.Controls.Add(this.tabPage6);
+            this.tcAudioSource.Controls.Add(this.tabPage7);
             this.tcAudioSource.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tcAudioSource.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.tcAudioSource.Location = new System.Drawing.Point(6, 6);
@@ -612,6 +619,49 @@ namespace iSpyApplication
             this.button5.UseVisualStyleBackColor = true;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
+            // tabPage7
+            // 
+            this.tabPage7.Controls.Add(this.tableLayoutPanel1);
+            this.tabPage7.Location = new System.Drawing.Point(4, 22);
+            this.tabPage7.Name = "tabPage7";
+            this.tabPage7.Size = new System.Drawing.Size(498, 224);
+            this.tabPage7.TabIndex = 7;
+            this.tabPage7.Text = "Wav Stream";
+            this.tabPage7.UseVisualStyleBackColor = true;
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.Controls.Add(this.label3, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.txtWavStreamURL, 1, 0);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 2;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(498, 87);
+            this.tableLayoutPanel1.TabIndex = 34;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(3, 8);
+            this.label3.Margin = new System.Windows.Forms.Padding(3, 8, 3, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(29, 13);
+            this.label3.TabIndex = 31;
+            this.label3.Text = "URL";
+            // 
+            // txtWavStreamURL
+            // 
+            this.txtWavStreamURL.Location = new System.Drawing.Point(38, 3);
+            this.txtWavStreamURL.Name = "txtWavStreamURL";
+            this.txtWavStreamURL.Size = new System.Drawing.Size(266, 20);
+            this.txtWavStreamURL.TabIndex = 30;
+            // 
             // MicrophoneSource
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -650,6 +700,9 @@ namespace iSpyApplication
             this.panel1.ResumeLayout(false);
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
+            this.tabPage7.ResumeLayout(false);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -702,5 +755,9 @@ namespace iSpyApplication
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel10;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.ComboBox ddlCloneMicrophone;
+        private System.Windows.Forms.TabPage tabPage7;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtWavStreamURL;
     }
 }

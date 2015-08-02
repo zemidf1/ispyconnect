@@ -1511,7 +1511,7 @@ namespace iSpyApplication.Controls
                 _recordingThread = new Thread(Record)
                                    {
                                        Name = "Recording Thread (" + Micobject.id + ")",
-                                       IsBackground = false,
+                                       IsBackground = true,
                                        Priority = ThreadPriority.Normal
                                    };
                 _recordingThread.Start();
@@ -2050,6 +2050,12 @@ namespace iSpyApplication.Controls
                             AudioSourceErrorState = true;
                             _requestRefresh = true;
                         }
+                        break;
+                    case 6: //wav stream
+                        AudioSource = new WavStream(Micobject.settings.sourcename)
+                        {
+                            RecordingFormat = new WaveFormat(Micobject.settings.samples, 16, Micobject.settings.channels),
+                        };
                         break;
                 }
 
@@ -2748,7 +2754,7 @@ namespace iSpyApplication.Controls
                 }
                 
             }
-            var t = new Thread(() => AlertThread(type, msg, Micobject.id)) { Name = type + " (" + Micobject.id + ")", IsBackground = false };
+            var t = new Thread(() => AlertThread(type, msg, Micobject.id)) { Name = type + " (" + Micobject.id + ")", IsBackground = true };
             t.Start();           
         }
 

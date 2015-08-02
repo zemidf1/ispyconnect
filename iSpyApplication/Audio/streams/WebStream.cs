@@ -212,7 +212,7 @@
 //                var data = new byte[6400];
 //                if (_socket != null)
 //                {
-//                    while (!_stopEvent.WaitOne(0, false) && !MainForm.Reallyclose)
+//                    while (!_stopEvent.WaitOne(0, false) && !MainForm.ShuttingDown)
 //                    {
 //                        if (DataAvailable != null)
 //                        {

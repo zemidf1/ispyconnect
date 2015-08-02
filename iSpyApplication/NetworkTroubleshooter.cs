@@ -35,7 +35,7 @@ namespace iSpyApplication
             UISync.Init(this);
 
 
-            var t = new Thread(Troubleshooter) { IsBackground = false };
+            var t = new Thread(Troubleshooter) { IsBackground = true };
             t.Start();
         }
 
@@ -408,7 +408,7 @@ namespace iSpyApplication
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var t = new Thread(Troubleshooter) { IsBackground = false };
+            var t = new Thread(Troubleshooter) { IsBackground = true };
             t.Start();
         }
 

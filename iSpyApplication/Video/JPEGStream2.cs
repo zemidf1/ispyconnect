@@ -424,7 +424,7 @@ namespace iSpyApplication.Video
             var res = ReasonToFinishPlaying.StoppedByUser;
             int err = 0;
 
-            while (!_stopEvent.WaitOne(0, false) && !MainForm.Reallyclose)
+            while (!_stopEvent.WaitOne(0, false) && !MainForm.ShuttingDown)
 			{
 			    int	total = 0;
 
@@ -554,19 +554,8 @@ namespace iSpyApplication.Video
 						{
 						    using (var bitmap = (Bitmap) Image.FromStream(new MemoryStream(buffer, 0, total)))
 						    {
-						        // notify client
 						        NewFrame(this, new NewFrameEventArgs(bitmap));
-						        // release the image
 						    }
-						    //var decoder = new JpegBitmapDecoder(new MemoryStream(buffer, 0, total), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-                            //BitmapSource frame = decoder.Frames[0];
-                            //Bitmap bmp = BitmapFromSource(frame);
-                            
-                            //NewFrame(this, new NewFrameEventArgs(bmp));
-                            //bmp.Dispose();
-                            ////// release the image
-                            ////bmp.Dispose();
-                            //bmp = null;
 						}
 					}
 
@@ -575,7 +564,7 @@ namespace iSpyApplication.Video
 					{
 						// get download duration
 						span = Helper.Now.Subtract( start );
-						// miliseconds to sleep
+						// milliseconds to sleep
 						int msec = _frameInterval - (int) span.TotalMilliseconds;
 
                         if ( ( msec > 0 ) && ( _stopEvent.WaitOne( msec, false ) ) )

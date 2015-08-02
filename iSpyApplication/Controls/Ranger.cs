@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace iSpyApplication.Controls
@@ -246,7 +247,7 @@ namespace iSpyApplication.Controls
         private void txtVal1_TextChanged(object sender, EventArgs e)
         {
             double d;
-            if (double.TryParse(txtVal1.Text, out d))
+            if (double.TryParse(txtVal1.Text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d))
             {
                 if (Math.Abs(d - ValueMin) > double.Epsilon)
                 {
@@ -262,7 +263,7 @@ namespace iSpyApplication.Controls
         private void txtVal2_TextChanged(object sender, EventArgs e)
         {
             double d;
-            if (double.TryParse(txtVal2.Text, out d))
+            if (double.TryParse(txtVal2.Text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d))
             {
                 if (Math.Abs(d - ValueMax) > double.Epsilon)
                 {

@@ -2,9 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using iSpyApplication.Controls;
 using iSpyApplication.Video;
-using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using AudioFileReader = iSpy.Video.FFMPEG.AudioFileReader;
 
@@ -41,6 +39,8 @@ namespace iSpyApplication
                 sourceIndex = 4;
             if (tcAudioSource.SelectedTab.Equals(tabPage6))
                 sourceIndex = 5;
+            if (tcAudioSource.SelectedTab.Equals(tabPage7))
+                sourceIndex = 6;
           
             return sourceIndex;
         }
@@ -127,6 +127,23 @@ namespace iSpyApplication
                         return;
                     }
                     break;
+                case 6:
+                    try
+                    {
+                        var url = new Uri(txtWavStreamURL.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        return;
+                    }
+                    Mic.settings.sourcename = txtWavStreamURL.Text;
+
+                    //set default format
+                    Mic.settings.channels = 1;
+                    Mic.settings.samples = 16000;
+                    Mic.settings.bits = 16;
+                    break;
             }
 
             MainForm.Conf.VLCURL = cmbVLCURL.Text.Trim();
@@ -187,6 +204,9 @@ namespace iSpyApplication
                     break;
                 case 5:
                     tcAudioSource.SelectedTab = tabPage6;
+                    break;
+                case 6:
+                    tcAudioSource.SelectedTab = tabPage7;
                     break;
             }
 
@@ -297,6 +317,9 @@ namespace iSpyApplication
                             }
                         }
                     }
+                    break;
+                case 6:
+                    txtWavStreamURL.Text = Mic.settings.sourcename;
                     break;
             }
             

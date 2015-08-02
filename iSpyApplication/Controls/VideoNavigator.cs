@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace iSpyApplication.Controls
@@ -158,7 +159,7 @@ namespace iSpyApplication.Controls
                             for (int i = 0; i < _datapoints.Length; i++)
                             {
                                 float d;
-                                if (float.TryParse(_datapoints[i], out d))
+                                if (float.TryParse(_datapoints[i], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out d))
                                 {
                                     d = d * dFact;
                                     if (d >= trigger && d <= triggermax)

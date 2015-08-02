@@ -1017,8 +1017,8 @@ namespace iSpyApplication
                 
             if (!String.IsNullOrEmpty(audioip))
             {
-                IPAddress _aip;
-                if (!IPAddress.TryParse(audioip, out _aip))
+                IPAddress aip;
+                if (!IPAddress.TryParse(audioip, out aip))
                 {
                     try
                     {
